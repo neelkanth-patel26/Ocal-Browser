@@ -86,10 +86,10 @@ function updateSearchEngineLogo(engine) {
 
 // ── Private / Stealth Mode Customization ─────────────────────────
 function initPrivateModeHome() {
-    const isPrivate = window.location.search.includes('private=true') || 
-                      window.location.hash.includes('private') || 
-                      document.documentElement.classList.contains('sp-private-mode') ||
-                      document.body?.classList?.contains('sp-private-mode');
+    const isPrivate = window.location.search.includes('private=true') ||
+        window.location.hash.includes('private') ||
+        document.documentElement.classList.contains('sp-private-mode') ||
+        document.body?.classList?.contains('sp-private-mode');
     if (!isPrivate) {
         const privateCards = document.getElementById('sp-private-benefits-grid');
         if (privateCards) privateCards.style.display = 'none';
@@ -125,7 +125,7 @@ function initPrivateModeHome() {
             }
         });
         privateThemeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    } catch (e) {}
+    } catch (e) { }
 
     if (window.OcalColorHarmonizer) {
         window.OcalColorHarmonizer.applyHarmonizedTheme('#f87d51', 'dark', document, false, true);
@@ -237,16 +237,16 @@ function initPrivateModeHome() {
                     status.style.color = powers.keepLogins ? '#10b981' : '#64748b';
                 }
             }
-        }).catch(() => {});
+        }).catch(() => { });
     }
     localStorage.removeItem('ocal-private-console-hidden');
 }
 
-window.togglePrivacyConsole = function(hide) {
+window.togglePrivacyConsole = function (hide) {
     // Deprecated: dashboard is permanently visible
 };
 
-window.testDohPing = async function(btn) {
+window.testDohPing = async function (btn) {
     const metric = document.getElementById('cpd-doh-metric-home') || document.getElementById('cpd-doh-metric');
     const sub = document.getElementById('cpd-doh-sub-home') || document.getElementById('cpd-doh-sub');
     if (metric) metric.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>';
@@ -271,7 +271,7 @@ window.testDohPing = async function(btn) {
 };
 
 let _homeGeoShowingCoords = false;
-window.toggleGeoCoordinates = function(el) {
+window.toggleGeoCoordinates = function (el) {
     const metric = document.getElementById('cpd-geo-metric-home') || document.getElementById('cpd-geo-metric');
     const sub = document.getElementById('cpd-geo-sub-home') || document.getElementById('cpd-geo-sub');
     _homeGeoShowingCoords = !_homeGeoShowingCoords;
@@ -284,7 +284,7 @@ window.toggleGeoCoordinates = function(el) {
     }
 };
 
-window.purgeMemoryEffect = function(btn) {
+window.purgeMemoryEffect = function (btn) {
     const metric = document.getElementById('cpd-ram-metric-home') || document.getElementById('cpd-ram-metric');
     const sub = document.getElementById('cpd-ram-sub-home') || document.getElementById('cpd-ram-sub');
     if (metric) metric.textContent = '0 B ✓';
@@ -295,7 +295,7 @@ window.purgeMemoryEffect = function(btn) {
     }, 2500);
 };
 
-window.togglePrivateVault = function(checked) {
+window.togglePrivateVault = function (checked) {
     const status = document.getElementById('vault-status-text-home') || document.getElementById('vault-status-text');
     if (status) {
         status.textContent = checked ? 'Vault Active (Logins Kept)' : 'Logins reset on exit (Default)';
@@ -320,7 +320,7 @@ function updateTick() {
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
-    
+
     if (clockEl) clockEl.innerHTML = `${String(hours).padStart(2, '0')}<span class="clock-colon">:</span>${String(minutes).padStart(2, '0')}`;
 
     if (greetingTxt) {
@@ -382,7 +382,7 @@ function executeSearch() {
         else if (currentSearchEngine === 'duckduckgo') searchUrl = `https://duckduckgo.com/?${isSafeSearch ? 'kp=1&' : ''}kae=${isLight ? '-1' : 'd'}&q=`;
         else if (currentSearchEngine === 'brave') searchUrl = `https://search.brave.com/search?${isSafeSearch ? 'safesearch=strict&' : ''}theme=${isLight ? 'light' : 'dark'}&q=`;
         else if (currentSearchEngine === 'yahoo') searchUrl = 'https://search.yahoo.com/search?' + (isSafeSearch ? 'vm=r&' : '') + 'p=';
-        
+
         targetUrl = searchUrl + encodeURIComponent(q);
     }
 
@@ -480,10 +480,10 @@ const BRAND_ICON_MAP = {
 
 function inferShortcutMeta(rawUrl, rawTitle = '') {
     if (!rawUrl) return { title: 'Shortcut', iconType: 'fa', iconValue: 'fas fa-globe', isAiMatched: false, faviconUrl: '' };
-    
+
     let url = rawUrl.trim();
     if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-    
+
     let domain = '';
     let host = '';
     try {
@@ -671,7 +671,7 @@ class ShortcutManager {
     updateLivePreview() {
         const rawUrl = this.urlInput ? this.urlInput.value.trim() : '';
         const rawTitle = this.titleInput ? this.titleInput.value.trim() : '';
-        
+
         this.currentMeta = inferShortcutMeta(rawUrl, rawTitle);
 
         if (this.previewTitle) this.previewTitle.textContent = this.currentMeta.title || 'New Shortcut';
@@ -838,38 +838,38 @@ class FocusTimer {
         this.timeLeft = 25 * 60;
         this.timerId = null;
         this.breatheInterval = null;
-        
+
         this.timerToggle = document.getElementById('timer-toggle');
         this.timerReset = document.getElementById('timer-reset');
         this.progressEl = document.getElementById('timer-progress');
         this.timerDisplay = document.getElementById('timer-display');
         this.breatheDisplay = document.getElementById('breathe-display');
         this.timerContainer = document.getElementById('timer-container');
-        
+
         this.modeTimerBtn = document.getElementById('ff-mode-timer');
         this.modeBreatheBtn = document.getElementById('ff-mode-breathe');
-        
+
         this.totalSeconds = 25 * 60;
-        
+
         if (this.timerToggle) this.timerToggle.onclick = () => this.toggle();
         if (this.timerReset) this.timerReset.onclick = () => this.reset();
-        
+
         if (this.modeTimerBtn) this.modeTimerBtn.onclick = () => this.setMode('timer');
         if (this.modeBreatheBtn) this.modeBreatheBtn.onclick = () => this.setMode('breathe');
-        
+
         this.updateDisplay();
     }
-    
+
     setMode(newMode) {
         if (this.mode === newMode) return;
         this.pause();
         this.mode = newMode;
-        
+
         if (this.modeTimerBtn) {
             this.modeTimerBtn.classList.toggle('active', newMode === 'timer');
             this.modeBreatheBtn.classList.toggle('active', newMode === 'breathe');
         }
-        
+
         if (newMode === 'timer') {
             if (this.timerDisplay) this.timerDisplay.style.display = 'block';
             if (this.breatheDisplay) this.breatheDisplay.style.display = 'none';
@@ -886,12 +886,12 @@ class FocusTimer {
             if (this.progressEl) this.progressEl.style.strokeDashoffset = 0; // Full circle
         }
     }
-    
+
     toggle() {
         if (this.isRunning) this.pause();
         else this.start();
     }
-    
+
     start() {
         this.isRunning = true;
         document.body.classList.add('focus-active');
@@ -899,7 +899,7 @@ class FocusTimer {
             this.timerToggle.innerHTML = '<i class="fas fa-pause"></i>';
             this.timerToggle.classList.add('active');
         }
-        
+
         if (this.mode === 'timer') {
             this.timerId = setInterval(() => {
                 this.timeLeft--;
@@ -910,7 +910,7 @@ class FocusTimer {
             this.startBreathing();
         }
     }
-    
+
     startBreathing() {
         // 4s Inhale, 4s Exhale rhythm
         let step = 'inhale';
@@ -936,13 +936,13 @@ class FocusTimer {
         };
         breatheCycle();
     }
-    
+
     pause() {
         this.isRunning = false;
         document.body.classList.remove('focus-active');
         clearInterval(this.timerId);
         clearTimeout(this.breatheInterval);
-        
+
         if (this.timerToggle) {
             this.timerToggle.innerHTML = '<i class="fas fa-play"></i>';
             this.timerToggle.classList.remove('active');
@@ -952,7 +952,7 @@ class FocusTimer {
             if (this.breatheDisplay) this.breatheDisplay.textContent = 'PAUSED';
         }
     }
-    
+
     reset() {
         this.pause();
         if (this.mode === 'timer') {
@@ -962,18 +962,18 @@ class FocusTimer {
             if (this.breatheDisplay) this.breatheDisplay.textContent = 'READY';
         }
     }
-    
-    complete() { 
-        this.pause(); 
-        alert('Focus session complete!'); 
-        this.reset(); 
+
+    complete() {
+        this.pause();
+        alert('Focus session complete!');
+        this.reset();
     }
-    
+
     updateDisplay() {
         const mins = Math.floor(this.timeLeft / 60);
         const secs = this.timeLeft % 60;
         if (this.timerDisplay) this.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-        
+
         if (this.progressEl) {
             const offset = 471 - (471 * (this.timeLeft / this.totalSeconds));
             this.progressEl.style.strokeDashoffset = offset;
@@ -1069,7 +1069,7 @@ if (fCityEl && fLocInput) {
     fCityEl.onclick = () => {
         fCityEl.style.display = 'none';
         fLocInput.style.display = 'block';
-        
+
         // Extract city text only, removing any icon HTML or extra spaces
         const currentCity = fCityEl.innerText.trim();
         fLocInput.value = currentCity;
@@ -1394,7 +1394,7 @@ class StyleCustomizer {
             if (window.electronAPI && window.electronAPI.updateSetting) {
                 window.electronAPI.updateSetting('themeMode', val);
             } else {
-                try { localStorage.setItem('ocal-settings-theme', val); } catch (e) {}
+                try { localStorage.setItem('ocal-settings-theme', val); } catch (e) { }
             }
         }
     }
@@ -1410,7 +1410,7 @@ class StyleCustomizer {
         if (window.electronAPI && window.electronAPI.updateSetting) {
             window.electronAPI.updateSetting('accentColor', color);
         } else {
-            try { localStorage.setItem('ocal-settings-accent', color); } catch (e) {}
+            try { localStorage.setItem('ocal-settings-accent', color); } catch (e) { }
         }
     }
 
@@ -1532,7 +1532,7 @@ if (window.electronAPI) {
     if (splitOverlay) {
         window.electronAPI.on('tab-drag-start', () => {
             splitOverlay.style.display = 'flex';
-            splitOverlay.offsetHeight; 
+            splitOverlay.offsetHeight;
             splitOverlay.classList.add('active');
         });
 
@@ -1589,10 +1589,10 @@ const motdList = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-    const isPrivate = window.location.search.includes('private=true') || 
-                      window.location.hash.includes('private') || 
-                      document.documentElement.classList.contains('sp-private-mode') ||
-                      document.body?.classList?.contains('sp-private-mode');
+    const isPrivate = window.location.search.includes('private=true') ||
+        window.location.hash.includes('private') ||
+        document.documentElement.classList.contains('sp-private-mode') ||
+        document.body?.classList?.contains('sp-private-mode');
 
     // User name editable title persistence & dynamic greeting
     const userNameTitle = document.getElementById('user-name-title');
@@ -1712,7 +1712,7 @@ function initNewsHubEngine() {
     // Check opt-out setting
     const checkOptOut = () => {
         if (!newsTriggerBtn) return;
-        
+
         const updateVisibility = (isEnabled) => {
             newsTriggerBtn.style.setProperty('display', isEnabled ? 'inline-flex' : 'none', 'important');
         };
@@ -1767,7 +1767,7 @@ function initNewsHubEngine() {
         lastFetchedWeather = weather;
         try {
             localStorage.setItem('ocal-cached-weather', JSON.stringify(weather));
-        } catch (e) {}
+        } catch (e) { }
 
         const cur = weather.current || {};
         const today = weather.today || {};
@@ -1821,7 +1821,7 @@ function initNewsHubEngine() {
         if (humEl) humEl.innerHTML = `<span class="w-val-num">${humVal}%</span> <span class="w-val-sub">${humLevel}</span>`;
 
         if (windEl) windEl.innerHTML = `<span class="w-val-num">${formatSpeed(cur.windSpeed ?? 0)}</span>`;
-        
+
         const uvVal = typeof cur.uvIndex === 'number' ? Number(cur.uvIndex.toFixed(1)) : (cur.uvIndex ?? 0);
         let uvLevel = 'Low';
         let uvBadgeClass = 'uv-low';
@@ -1831,11 +1831,11 @@ function initNewsHubEngine() {
         if (uvEl) uvEl.innerHTML = `<span class="w-val-num">${uvVal}</span> <span class="w-val-badge ${uvBadgeClass}">${uvLevel}</span>`;
 
         if (pressEl) pressEl.textContent = `${Math.round(cur.pressure ?? 1013)} hPa`;
-        
+
         const visKm = cur.visibility ?? 10;
         const visStr = currentUnit === 'F' ? `${(visKm * 0.621371).toFixed(1)} mi` : `${visKm} km`;
         if (visEl) visEl.innerHTML = `<span class="w-val-num">${visStr}</span> <span class="w-val-sub">Clear</span>`;
-        
+
         if (srEl) srEl.innerHTML = `<span class="w-val-num">${today.sunrise || '06:00 AM'}</span>`;
         if (ssEl) ssEl.innerHTML = `<span class="w-val-num">${today.sunset || '06:50 PM'}</span>`;
         if (dewEl) dewEl.textContent = formatTemperature(today.dewPoint ?? cur.temp);
@@ -1924,7 +1924,7 @@ function initNewsHubEngine() {
             let cachedCoords = null;
             try {
                 cachedCoords = JSON.parse(localStorage.getItem('ocal-weather-coords') || 'null');
-            } catch (e) {}
+            } catch (e) { }
 
             // 1. Resolve Coordinates & City Name Worldwide
             if (typeof locationQuery === 'object' && locationQuery && locationQuery.latitude) {
@@ -1980,11 +1980,11 @@ function initNewsHubEngine() {
             localStorage.setItem('ocal-weather-loc', currentCityName);
             try {
                 localStorage.setItem('ocal-weather-coords', JSON.stringify({ query, lat, lon, name: resolvedName }));
-            } catch (e) {}
+            } catch (e) { }
 
             // 2. High-Accuracy Global Weather Forecast from Open-Meteo
             const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,pressure_msl,visibility,wind_speed_10m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=auto`;
-            
+
             const omRes = await fetch(forecastUrl, { signal: AbortSignal.timeout(6000) });
             if (omRes.ok) {
                 const omData = await omRes.json();
@@ -2097,20 +2097,12 @@ function initNewsHubEngine() {
     // Expose global weather loader for other components
     window.loadGlobalWeather = (q) => loadWeatherHubData(q);
 
-    // Bottom Drawer open / close handlers
+    // Navigate to dedicated Weather page (ocal://weather)
     function openWeatherModal() {
-        newsModalOverlay.style.display = 'flex';
-        newsModalOverlay.offsetHeight;
-        newsModalOverlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        if (citySearchInput) {
-            citySearchInput.value = '';
-            if (searchClearBtn) searchClearBtn.style.display = 'none';
-            const dropdown = document.getElementById('weather-search-dropdown');
-            if (dropdown) dropdown.style.display = 'none';
-        }
-        if (window.IconEnhancer) {
-            window.IconEnhancer.enhance(newsModalOverlay);
+        if (window.electronAPI && window.electronAPI.navigateTo) {
+            window.electronAPI.navigateTo('ocal://weather');
+        } else {
+            window.location.href = 'weather.html';
         }
     }
 
@@ -2134,7 +2126,7 @@ function initNewsHubEngine() {
 
     if (newsTriggerBtn) newsTriggerBtn.onclick = openWeatherModal;
     if (newsCloseBtn) newsCloseBtn.onclick = closeWeatherModal;
-    
+
     // Also attach to home page weather widgets to open the weather modal on click
     const spWeatherCard = document.querySelector('.sp-weather-card');
     if (spWeatherCard) {
@@ -2270,14 +2262,14 @@ function initNewsHubEngine() {
             const cachedWeather = JSON.parse(cachedRaw);
             renderWeatherData(cachedWeather);
         }
-    } catch (e) {}
+    } catch (e) { }
 
     // Fresh live meteorological telemetry fetch
     loadWeatherHubData(currentCityName);
 }
 
 // ── Ocal Start Page Real-Time Autocorrect Engine ────────────────────
-(function() {
+(function () {
     const TYPO_MAP = {
         'teh': 'the', 'taht': 'that', 'tihs': 'this', 'waht': 'what', 'wihch': 'which',
         'recieve': 'receive', 'seperate': 'separate', 'definately': 'definitely',
@@ -2349,11 +2341,11 @@ function initNewsHubEngine() {
 })();
 
 // ── Real-Time Theme, Theme Combo & AI Gradient Synchronization ────
-(function() {
-    const isPrivate = window.location.search.includes('private=true') || 
-                      window.location.hash.includes('private') || 
-                      document.documentElement.classList.contains('sp-private-mode') ||
-                      document.body?.classList?.contains('sp-private-mode');
+(function () {
+    const isPrivate = window.location.search.includes('private=true') ||
+        window.location.hash.includes('private') ||
+        document.documentElement.classList.contains('sp-private-mode') ||
+        document.body?.classList?.contains('sp-private-mode');
     if (isPrivate) return; // InPrivate mode stays private; NEVER sync normal themes or respond to storage events
 
     function syncHomeThemeAndGradients() {

@@ -3075,6 +3075,10 @@ function resolveInternalURL(url) {
         const qIdx = url.indexOf('?');
         return getFilePath('focus.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
+    if (cleanBase === 'weather' || cleanBase === 'ocal://weather') {
+        const qIdx = url.indexOf('?');
+        return getFilePath('weather.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
     if (cleanBase === 'ocal://onboarding' || cleanBase === 'onboarding' || cleanBase === 'ocal://welcome' || cleanBase === 'welcome') {
         return getFilePath('onboarding.html');
     }
@@ -3240,6 +3244,9 @@ function formatDisplayUrl(url) {
     }
     if (display.includes('focus.html') || display.startsWith('ocal://focus') || display.startsWith('ocal://focus-flow')) {
         return 'ocal://focus';
+    }
+    if (display.includes('weather.html') || display.startsWith('ocal://weather')) {
+        return 'ocal://weather';
     }
     if (display.includes('mindful-shield.html') || display.startsWith('ocal://mindful-shield') || display.startsWith('ocal://safe-shield')) {
         return 'ocal://mindful-shield';
@@ -3476,7 +3483,7 @@ function setupViewEvents(tabId, view, side = 'left') {
 
         if (isInternal) {
             // Pages that need scrolling get a different treatment
-            const needsScroll = url.includes('whats-new.html') || url.includes('settings.html') || url.includes('site-settings.html') || url.includes('games.html') || url.includes('extension-store.html') || url.includes('onboarding.html') || url.includes('welcome.html');
+            const needsScroll = url.includes('whats-new.html') || url.includes('settings.html') || url.includes('site-settings.html') || url.includes('games.html') || url.includes('extension-store.html') || url.includes('onboarding.html') || url.includes('welcome.html') || url.includes('weather.html');
             if (needsScroll) {
                 webContents.insertCSS(`
                     html {
@@ -10282,15 +10289,6 @@ function loadPasswordVaultRaw() {
     } catch (e) {
         console.warn('[PasswordVault] Failed to load vault file:', e);
     }
-    return [];
-}
-
-function savePasswordVaultRaw(vault) {
-    try {
-        fs.writeFileSync(PASSWORDS_FILE, JSON.stringify(vault, null, 2), 'utf8');
-    } catch (e) {
-        console.error('[PasswordVault] Failed to save vault file:', e);
-    }
 }
 
 function encryptSecret(plainText) {
@@ -11373,7 +11371,7 @@ function updateHistory(view, url) {
                 'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html',
                 'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html',
                 'bm-dropdown.html', 'file-manager.html', 'music-player.html', 'snake.html', 'tetris.html', 'page-context.html',
-                'focus.html', 'private-home.html', 'private-window.html', '2048.html', 'pong.html', 'breakout.html', 'hexgl',
+                'focus.html', 'weather.html', 'private-home.html', 'private-window.html', '2048.html', 'pong.html', 'breakout.html', 'hexgl',
                 'mindful-shield.html', 'mindful-shield'
             ].some(page => url.toLowerCase().includes(page.toLowerCase()));
 
@@ -11477,6 +11475,16 @@ app.whenReady().then(async () => {
                         : path.join(__dirname, subPath);
                     const fileUrl = require('url').pathToFileURL(targetFile).href;
                     return net.fetch(fileUrl).catch(() => new Response('Not found', { status: 404 }));
+                }
+                if (parsed.hostname === 'weather') {
+                    const subPath = parsed.pathname.replace(/^\/+/, '');
+                    const targetFile = (!subPath || subPath === 'weather' || subPath.endsWith('.html'))
+                        ? path.join(__dirname, 'weather.html')
+                        : path.join(__dirname, subPath);
+                    if (fs.existsSync(targetFile)) {
+                        const fileUrl = require('url').pathToFileURL(targetFile).href;
+                        return net.fetch(fileUrl).catch(() => new Response('Not found', { status: 404 }));
+                    }
                 }
                 if (parsed.hostname === 'arcade' || parsed.hostname === 'hexgl') {
                     const asset = require('./arcade-protocol.cjs').resolveArcadeAsset(reqUrl, __dirname);

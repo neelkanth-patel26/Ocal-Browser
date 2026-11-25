@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: http:;">
+    <title>Weather — Ocal</title>
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-weather-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <script src="assets/icon-enhancer.js"></script>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+
+        :root {
+            --bg-canvas: #F2F4F8;
+            --bg-sidebar: #E7EBF1;
+            --bg-glass: rgba(255, 255, 255, 0.72);
+            --bg-glass-hover: rgba(255, 255, 255, 0.92);
+            --bg-input: rgba(255, 255, 255, 0.78);
+            --border-subtle: rgba(15, 23, 42, 0.07);
+            --text-primary: #111827;
+            --text-secondary: #4B5563;
+            --text-muted: #8B95A5;
+            --accent-gold: #EAB308;
+            --accent-amber: #F59E0B;
+            --accent-sky: #38BDF8;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --bg-canvas: #151920;
+            --bg-sidebar: #1D222B;
+            --bg-glass: rgba(255, 255, 255, 0.045);
+            --bg-glass-hover: rgba(255, 255, 255, 0.075);
+            --bg-input: rgba(255, 255, 255, 0.055);
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --text-primary: #F3F4F6;
+            --text-secondary: #9CA3AF;
+            --text-muted: #6B7280;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: var(--font-main);
+            background: var(--bg-canvas);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .sky-shell {
+            display: grid;
+            grid-template-columns: 310px 1fr;
+            min-height: 100vh;
+            width: 100%;
+            position: relative;
+            background: var(--bg-canvas);
+        }
+
+        [data-theme="dark"] .sky-shell {
+            background: radial-gradient(circle at 82% 18%, rgba(245, 158, 11, 0.06), transparent 42%),
+                        radial-gradient(circle at 30% 85%, rgba(56, 189, 248, 0.04), transparent 45%),
+                        var(--bg-canvas);
+        }
+
+        /* Subtle right-edge accent bar like SkyView */
+        .sky-edge-accent {
+            position: fixed;
+            right: 14px;
+            top: 22%;
+            width: 3px;
+            height: 140px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, var(--accent-amber), rgba(245, 158, 11, 0.15));
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* ── Left Sidebar ─────────────────────────────────────────────────── */
+        .sky-sidebar {
+            background: var(--bg-sidebar);
+            padding: 28px 26px 24px 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            border-right: 1px solid var(--border-subtle);
+        }
+
+        .sky-brand {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            color: var(--text-primary);
+            opacity: 0.9;
+        }
+
+        .sky-location {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-top: 6px;
+        }
+
+        .sky-region {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .sky-city {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.4px;
+            color: var(--text-primary);
+        }
+
+        .sky-temp-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .sky-temp-big {
+            font-size: 68px;
+            font-weight: 300;
+            letter-spacing: -3px;
+            line-height: 0.95;
+            color: var(--text-primary);
+        }
+
+        .sky-hl {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .sky-hl-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot-h {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent-amber);
+        }
+
+        .dot-l {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent-sky);
+        }
+
+        /* Borderless Risk / Telemetry Block */
+        .sky-risk-section {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .sky-risk-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .sky-risk-track {
+            flex: 1;
+            height: 5px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.16);
+            overflow: hidden;
+        }
+
+        .sky-risk-fill {
+            height: 100%;
+            width: 24%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #10B981, #F59E0B);
+            transition: width 0.4s ease;
+        }
+
+        .sky-risk-pct {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sky-risk-pct::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent-amber);
+        }
+
+        .sky-meta-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .sky-meta-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .sky-meta-line {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.65;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sky-meta-line span.dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent-amber);
+            opacity: 0.75;
+        }
+
+        /* 3-Day Forecast Pills */
+        .sky-3day {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sky-3day-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 14px;
+            border-radius: 13px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            transition: background 0.15s ease;
+        }
+
+        .sky-3day-item:hover {
+            background: var(--bg-glass-hover);
+        }
+
+        .sky-3day-left {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .sky-3day-icon {
+            width: 24px;
+            text-align: center;
+            font-size: 15px;
+            color: var(--accent-amber);
+        }
+
+        .sky-3day-day {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .sky-3day-cond {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .sky-3day-temp {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .sky-3day-temp span {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .sky-see-all {
+            align-self: center;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 2px 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sky-see-all:hover {
+            color: var(--text-primary);
+        }
+
+        /* Sunrise / Sunset Arc */
+        .sky-sun-card {
+            margin-top: auto;
+            padding: 16px 16px 14px 16px;
+            border-radius: 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sky-sun-svg {
+            width: 100%;
+            height: 58px;
+            overflow: visible;
+        }
+
+        .sky-sun-times {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* ── Main Content Area ────────────────────────────────────────────── */
+        .sky-main {
+            padding: 28px 44px 32px 44px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            width: 100%;
+        }
+
+        /* Top Bar */
+        .sky-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .sky-search-wrap {
+            position: relative;
+            width: 340px;
+            max-width: 100%;
+        }
+
+        .sky-search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 15px;
+            border-radius: 10px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .sky-search-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .sky-search-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .sky-search-box i {
+            color: var(--text-muted);
+            font-size: 12.5px;
+        }
+
+        .sky-search-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 6px;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .sky-dropdown-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 11px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12.5px;
+            color: var(--text-primary);
+        }
+
+        .sky-dropdown-item:hover {
+            background: var(--bg-glass-hover);
+        }
+
+        .sky-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sky-ctrl-btn {
+            height: 32px;
+            padding: 0 11px;
+            border-radius: 999px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .sky-ctrl-btn:hover {
+            background: var(--bg-glass-hover);
+            color: var(--text-primary);
+        }
+
+        /* Editorial Headline */
+        .sky-headline {
+            margin-top: 6px;
+        }
+
+        .sky-headline-main {
+            font-size: 46px;
+            font-weight: 600;
+            letter-spacing: -1.4px;
+            line-height: 1.08;
+            color: var(--text-primary);
+        }
+
+        .sky-headline-sub {
+            font-size: 38px;
+            font-weight: 300;
+            letter-spacing: -1px;
+            line-height: 1.15;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Central Hourly / 7-Day Glass Card */
+        .sky-forecast-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: 20px 24px 16px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .sky-forecast-desc {
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: var(--text-secondary);
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .sky-hourly-row {
+            display: grid;
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            gap: 6px;
+            text-align: center;
+        }
+
+        .sky-hour-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 2px;
+        }
+
+        .sky-hour-time {
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .sky-hour-col.now .sky-hour-time {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .sky-hour-icon {
+            font-size: 17px;
+            color: var(--text-primary);
+        }
+
+        .sky-hour-col.now .sky-hour-icon {
+            color: var(--accent-amber);
+        }
+
+        .sky-hour-temp {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .sky-daily-row {
+            display: none;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 8px;
+            text-align: center;
+        }
+
+        .sky-day-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 4px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.025);
+        }
+
+        .sky-card-footer-link {
+            align-self: flex-start;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 2px 0;
+        }
+
+        .sky-card-footer-link:hover {
+            color: var(--text-primary);
+        }
+
+        /* Visibility & Humidity Twin Cards */
+        .sky-metrics-pair {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            width: 100%;
+        }
+
+        .sky-metric-box {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 15px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sky-metric-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .sky-metric-label i {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .sky-metric-content {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .sky-metric-num {
+            font-size: 24px;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .sky-metric-note {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        /* Bottom Glowing Wave Card */
+        .sky-wave-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: 16px 24px 18px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .sky-wave-svg {
+            width: 100%;
+            height: 48px;
+            overflow: visible;
+        }
+
+        .sky-wave-labels {
+            display: grid;
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        .sky-wave-pt {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sky-wave-temp {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .sky-wave-time {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .sky-wave-sub {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 980px) {
+            .sky-shell {
+                grid-template-columns: 1fr;
+            }
+            .sky-sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+            .sky-main {
+                padding: 24px 22px;
+            }
+            .sky-metrics-pair {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sky-shell">
+        <div class="sky-edge-accent"></div>
+
+        <!-- Left Sidebar -->
+        <aside class="sky-sidebar">
+            <div class="sky-brand">SkyView</div>
+
+            <div class="sky-location">
+                <span class="sky-region" id="side-region">Locating...</span>
+                <h2 class="sky-city" id="side-city">Ahmedabad</h2>
+            </div>
+
+            <div class="sky-temp-row">
+                <div class="sky-temp-big" id="side-temp">--°</div>
+                <div class="sky-hl">
+                    <div class="sky-hl-row"><span class="dot-h"></span> <span id="side-high">H: --°</span></div>
+                    <div class="sky-hl-row"><span class="dot-l"></span> <span id="side-low">L: --°</span></div>
+                </div>
+            </div>
+
+            <div class="sky-risk-section">
+                <div class="sky-risk-bar-row">
+                    <div class="sky-risk-track"><div class="sky-risk-fill" id="risk-fill"></div></div>
+                    <div class="sky-risk-pct" id="side-precip">0%</div>
+                </div>
+                <div class="sky-meta-cols">
+                    <div>
+                        <div class="sky-meta-label">Comfort</div>
+                        <div class="sky-meta-line"><span class="dot"></span> <span id="side-feels">Feels: --°</span></div>
+                        <div class="sky-meta-line"><span class="dot"></span> <span id="side-dew">Dew: --°</span></div>
+                    </div>
+                    <div>
+                        <div class="sky-meta-label">Atmosphere</div>
+                        <div class="sky-meta-line"><span class="dot"></span> <span id="side-uv">UV: --</span></div>
+                        <div class="sky-meta-line"><span class="dot"></span> <span id="side-press">-- hPa</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sky-3day" id="sidebar-3day"></div>
+
+            <button class="sky-see-all" id="btn-see-all" type="button">
+                <span>See All</span>
+                <i class="fas fa-chevron-right" style="font-size: 9px;"></i>
+            </button>
+
+            <div class="sky-sun-card">
+                <svg class="sky-sun-svg" viewBox="0 0 240 58" preserveAspectRatio="none">
+                    <defs>
+                        <radialGradient id="sunHalo" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.55" />
+                            <stop offset="100%" stop-color="#F59E0B" stop-opacity="0" />
+                        </radialGradient>
+                    </defs>
+                    <path d="M 10 50 Q 120 -6 230 50" fill="none" stroke="rgba(148,163,184,0.18)" stroke-width="1.5" />
+                    <path d="M 10 50 Q 120 -6 230 50" fill="none" stroke="#F59E0B" stroke-width="1.8" stroke-opacity="0.7" />
+                    <circle id="sun-halo" cx="120" cy="22" r="14" fill="url(#sunHalo)" />
+                    <circle id="sun-dot" cx="120" cy="22" r="4.5" fill="#FDE047" />
+                </svg>
+                <div class="sky-sun-times">
+                    <span id="side-sunset">S.S: 05:53 PM</span>
+                    <span id="side-sunrise">S.R: 06:59 AM</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="sky-main">
+            <div class="sky-topbar">
+                <div class="sky-search-wrap">
+                    <div class="sky-search-box">
+                        <input type="text" id="city-input" placeholder="Search any city worldwide..." autocomplete="off">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="sky-search-dropdown" id="search-dropdown"></div>
+                </div>
+
+                <div class="sky-controls">
+                    <button class="sky-ctrl-btn" id="btn-unit" type="button">°C</button>
+                    <button class="sky-ctrl-btn" id="btn-refresh" type="button" title="Refresh"><i class="fas fa-rotate-right"></i></button>
+                    <button class="sky-ctrl-btn" id="btn-theme" type="button" title="Toggle Theme"><i class="fas fa-circle-half-stroke"></i></button>
+                    <button class="sky-ctrl-btn" id="btn-home" type="button"><i class="fas fa-arrow-left"></i> Home</button>
+                </div>
+            </div>
+
+            <div class="sky-headline">
+                <h1 class="sky-headline-main" id="hero-title">Clear</h1>
+                <p class="sky-headline-sub" id="hero-sub">with a light breeze</p>
+            </div>
+
+            <!-- Forecast Panel -->
+            <section class="sky-forecast-card">
+                <p class="sky-forecast-desc" id="forecast-desc">
+                    Fetching live meteorological telemetry...
+                </p>
+                <div class="sky-hourly-row" id="hourly-row"></div>
+                <div class="sky-daily-row" id="daily-row"></div>
+                <button class="sky-card-footer-link" id="btn-toggle-view" type="button">
+                    <span id="toggle-view-text">See More</span>
+                    <i class="fas fa-chevron-right" style="font-size: 9px;"></i>
+                </button>
+            </section>
+
+            <!-- Visibility & Humidity -->
+            <section class="sky-metrics-pair">
+                <div class="sky-metric-box">
+                    <div class="sky-metric-label"><i class="fas fa-eye"></i> <span>Visibility</span></div>
+                    <div class="sky-metric-content">
+                        <span class="sky-metric-num" id="m-vis">-- km</span>
+                        <span class="sky-metric-note" id="m-vis-note">Crystal clear skies ahead</span>
+                    </div>
+                </div>
+                <div class="sky-metric-box">
+                    <div class="sky-metric-label"><i class="fas fa-bars-staggered"></i> <span>Humidity</span></div>
+                    <div class="sky-metric-content">
+                        <span class="sky-metric-num" id="m-hum">-- %</span>
+                        <span class="sky-metric-note" id="m-hum-note">The dew point is currently at --°</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bottom Glowing Temperature Wave -->
+            <section class="sky-wave-card">
+                <svg class="sky-wave-svg" viewBox="0 0 800 48" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="skyWaveStroke" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.2" />
+                            <stop offset="50%" stop-color="#FBBF24" stop-opacity="0.95" />
+                            <stop offset="100%" stop-color="#F59E0B" stop-opacity="0.2" />
+                        </linearGradient>
+                        <linearGradient id="skyWaveFill" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.18" />
+                            <stop offset="100%" stop-color="#F59E0B" stop-opacity="0" />
+                        </linearGradient>
+                    </defs>
+                    <path id="wave-area" d="" fill="url(#skyWaveFill)" />
+                    <path id="wave-line" d="" fill="none" stroke="url(#skyWaveStroke)" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <div class="sky-wave-labels" id="wave-labels"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        (function () {
+            let currentUnit = localStorage.getItem('ocal-weather-unit') || 'C';
+            let currentCityName = localStorage.getItem('ocal-weather-loc') || localStorage.getItem('ocal-settings-weather-location') || 'Ahmedabad';
+            let lastWeather = null;
+            let viewMode = 'hourly';
+
+            const btnUnit = document.getElementById('btn-unit');
+            btnUnit.textContent = `°${currentUnit}`;
+
+            function fmtT(c, withUnit = false) {
+                if (c === undefined || c === null || isNaN(c)) return '--°';
+                const v = currentUnit === 'F' ? Math.round(c * 9 / 5 + 32) : Math.round(c);
+                return withUnit ? `${v}°${currentUnit}` : `${v}°`;
+            }
+
+            function fmtSpd(kmh) {
+                if (kmh === undefined || kmh === null || isNaN(kmh)) return '--';
+                return currentUnit === 'F' ? `${Math.round(kmh * 0.621371)} mph` : `${Math.round(kmh)} km/h`;
+            }
+
+            function weatherSvg(kind, size = 24) {
+                const s = `width="${size}" height="${size}" viewBox="0 0 32 32" fill="none" style="display:block;"`;
+                switch (kind) {
+                    case 'sun':
+                        return `<svg ${s}>
+                            <circle cx="16" cy="16" r="6.5" fill="#FBBF24"/>
+                            <circle cx="16" cy="16" r="9.5" fill="#F59E0B" opacity="0.22"/>
+                            <g stroke="#F59E0B" stroke-width="2" stroke-linecap="round">
+                                <line x1="16" y1="3" x2="16" y2="5.5"/><line x1="16" y1="26.5" x2="16" y2="29"/>
+                                <line x1="3" y1="16" x2="5.5" y2="16"/><line x1="26.5" y1="16" x2="29" y2="16"/>
+                                <line x1="6.8" y1="6.8" x2="8.6" y2="8.6"/><line x1="23.4" y1="23.4" x2="25.2" y2="25.2"/>
+                                <line x1="25.2" y1="6.8" x2="23.4" y2="8.6"/><line x1="8.6" y1="23.4" x2="6.8" y2="25.2"/>
+                            </g>
+                        </svg>`;
+                    case 'moon':
+                        return `<svg ${s}>
+                            <path d="M21.8 19.6A8.5 8.5 0 0 1 12.4 10.2a8.5 8.5 0 1 0 9.4 9.4Z" fill="#FBBF24"/>
+                            <circle cx="22.5" cy="9.5" r="1.4" fill="#FDE047"/>
+                            <circle cx="25.5" cy="13.5" r="0.9" fill="#FDE047" opacity="0.75"/>
+                        </svg>`;
+                    case 'partly-day':
+                        return `<svg ${s}>
+                            <circle cx="12" cy="12" r="5" fill="#FBBF24"/>
+                            <g stroke="#F59E0B" stroke-width="1.7" stroke-linecap="round">
+                                <line x1="12" y1="3.5" x2="12" y2="5"/><line x1="3.5" y1="12" x2="5" y2="12"/>
+                                <line x1="6" y1="6" x2="7.2" y2="7.2"/><line x1="18" y1="6" x2="16.8" y2="7.2"/>
+                            </g>
+                            <path d="M11.5 24h11a4.5 4.5 0 0 0 .6-8.95A6 6 0 0 0 11.4 13.5a4.5 4.5 0 0 0 .1 10.5Z" fill="#CBD5E1"/>
+                            <path d="M11.5 24h11a4.5 4.5 0 0 0 .6-8.95A6 6 0 0 0 11.4 13.5a4.5 4.5 0 0 0 .1 10.5Z" fill="#F8FAFC" opacity="0.7"/>
+                        </svg>`;
+                    case 'partly-night':
+                        return `<svg ${s}>
+                            <path d="M15.2 12.8A5.2 5.2 0 0 1 9.5 7.1a5.2 5.2 0 1 0 5.7 5.7Z" fill="#FBBF24"/>
+                            <path d="M11.5 24h11a4.5 4.5 0 0 0 .6-8.95A6 6 0 0 0 11.4 13.5a4.5 4.5 0 0 0 .1 10.5Z" fill="#CBD5E1"/>
+                        </svg>`;
+                    case 'cloud':
+                        return `<svg ${s}>
+                            <path d="M9.5 23.5h13.5a4.8 4.8 0 0 0 .6-9.55A6.5 6.5 0 0 0 10.8 12.2a4.8 4.8 0 0 0-1.3 11.3Z" fill="#94A3B8"/>
+                            <path d="M9.5 23.5h13.5a4.8 4.8 0 0 0 .6-9.55A6.5 6.5 0 0 0 10.8 12.2a4.8 4.8 0 0 0-1.3 11.3Z" fill="#E2E8F0" opacity="0.55"/>
+                        </svg>`;
+                    case 'fog':
+                        return `<svg ${s}>
+                            <path d="M9.5 18.5h13a4 4 0 0 0 .5-7.95A5.5 5.5 0 0 0 12 9.2a4 4 0 0 0-2.5 9.3Z" fill="#94A3B8" opacity="0.85"/>
+                            <g stroke="#94A3B8" stroke-width="2" stroke-linecap="round">
+                                <line x1="7" y1="22" x2="25" y2="22"/><line x1="9" y1="25.5" x2="23" y2="25.5"/>
+                            </g>
+                        </svg>`;
+                    case 'rain':
+                        return `<svg ${s}>
+                            <path d="M9.5 19.5h13a4.3 4.3 0 0 0 .5-8.55A6 6 0 0 0 11.2 9.4a4.4 4.4 0 0 0-1.7 10.1Z" fill="#94A3B8"/>
+                            <g stroke="#38BDF8" stroke-width="2.1" stroke-linecap="round">
+                                <line x1="11.5" y1="22.5" x2="10" y2="26.5"/>
+                                <line x1="16.5" y1="22.5" x2="15" y2="26.5"/>
+                                <line x1="21.5" y1="22.5" x2="20" y2="26.5"/>
+                            </g>
+                        </svg>`;
+                    case 'snow':
+                        return `<svg ${s}>
+                            <path d="M9.5 19.5h13a4.3 4.3 0 0 0 .5-8.55A6 6 0 0 0 11.2 9.4a4.4 4.4 0 0 0-1.7 10.1Z" fill="#CBD5E1"/>
+                            <g fill="#7DD3FC">
+                                <circle cx="11.5" cy="24" r="1.6"/><circle cx="16.5" cy="25.5" r="1.6"/><circle cx="21.5" cy="24" r="1.6"/>
+                            </g>
+                        </svg>`;
+                    case 'storm':
+                        return `<svg ${s}>
+                            <path d="M9.5 19.5h13a4.3 4.3 0 0 0 .5-8.55A6 6 0 0 0 11.2 9.4a4.4 4.4 0 0 0-1.7 10.1Z" fill="#64748B"/>
+                            <path d="M17 19l-3.5 5.5h3l-1.5 4.5 4.5-6h-3l1.5-4Z" fill="#FBBF24"/>
+                        </svg>`;
+                    default:
+                        return weatherSvg('sun', size);
+                }
+            }
+
+            function wmo(code, isDay = 1) {
+                const c = parseInt(code, 10);
+                switch (c) {
+                    case 0: return { short: 'Clear', text: 'Clear', icon: isDay ? 'sun' : 'moon' };
+                    case 1: return { short: 'Mainly Clear', text: 'Mainly Clear', icon: isDay ? 'partly-day' : 'partly-night' };
+                    case 2: return { short: 'Partly Cloudy', text: 'Partly Cloudy', icon: isDay ? 'partly-day' : 'partly-night' };
+                    case 3: return { short: 'Cloudy', text: 'Overcast', icon: 'cloud' };
+                    case 45: case 48: return { short: 'Fog', text: 'Misty', icon: 'fog' };
+                    case 51: case 53: case 55: return { short: 'Drizzle', text: 'Light Drizzle', icon: 'rain' };
+                    case 61: case 63: case 65: return { short: 'Rain', text: 'Rainy', icon: 'rain' };
+                    case 71: case 73: case 75: case 77: return { short: 'Snow', text: 'Snowy', icon: 'snow' };
+                    case 80: case 81: case 82: return { short: 'Showers', text: 'Rain Showers', icon: 'rain' };
+                    case 95: case 96: case 99: return { short: 'Storm', text: 'Thunderstorm', icon: 'storm' };
+                    default: return { short: 'Clear', text: 'Clear', icon: isDay ? 'sun' : 'moon' };
+                }
+            }
+
+            function windPhrase(kmh) {
+                if (kmh < 6) return 'with calm air';
+                if (kmh < 18) return 'with a light breeze';
+                if (kmh < 32) return 'with a moderate breeze';
+                return 'with gusty winds';
+            }
+
+            function renderAll(w) {
+                if (!w) return;
+                lastWeather = w;
+                try { localStorage.setItem('ocal-cached-weather', JSON.stringify(w)); } catch (e) {}
+
+                const cur = w.current || {};
+                const today = w.today || {};
+                const hourly = w.hourly || [];
+                const daily = w.daily || [];
+                const isDay = cur.isDay ?? 1;
+                const info = wmo(cur.weatherCode, isDay);
+
+                const parts = (w.cityName || currentCityName).split(',').map(s => s.trim());
+                const cityOnly = parts[0] || currentCityName;
+                const regionOnly = parts.slice(1).join(', ') || 'Global';
+
+                document.getElementById('side-city').textContent = cityOnly;
+                document.getElementById('side-region').textContent = regionOnly;
+                document.getElementById('city-input').placeholder = cityOnly + (parts[1] ? `, ${parts[1]}` : '');
+
+                document.getElementById('side-temp').textContent = fmtT(cur.temp);
+                document.getElementById('side-high').textContent = `H : ${fmtT(today.high ?? cur.temp)}`;
+                document.getElementById('side-low').textContent = `L : ${fmtT(today.low ?? cur.temp)}`;
+
+                const precip = hourly[0]?.pop ?? 0;
+                document.getElementById('side-precip').textContent = `${precip}%`;
+                document.getElementById('risk-fill').style.width = `${Math.max(10, Math.min(100, precip || (cur.uvIndex || 1) * 10))}%`;
+
+                document.getElementById('side-feels').textContent = `Feels: ${fmtT(cur.feelsLike ?? cur.temp)}`;
+                document.getElementById('side-dew').textContent = `Dew: ${fmtT(today.dewPoint ?? cur.temp)}`;
+                document.getElementById('side-uv').textContent = `UV: ${typeof cur.uvIndex === 'number' ? cur.uvIndex.toFixed(1) : (cur.uvIndex ?? 0)}`;
+                document.getElementById('side-press').textContent = `${Math.round(cur.pressure ?? 1013)} hPa`;
+
+                // 3-Day Sidebar
+                document.getElementById('sidebar-3day').innerHTML = daily.slice(1, 4).map(d => {
+                    const di = wmo(d.weatherCode, 1);
+                    return `
+                        <div class="sky-3day-item">
+                            <div class="sky-3day-left">
+                                <div class="sky-3day-icon">${weatherSvg(di.icon, 24)}</div>
+                                <div>
+                                    <div class="sky-3day-day">${d.day}</div>
+                                    <div class="sky-3day-cond">${di.short}</div>
+                                </div>
+                            </div>
+                            <div class="sky-3day-temp">${fmtT(d.high)}<span>/${fmtT(d.low)}</span></div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Sun Arc
+                document.getElementById('side-sunset').textContent = `S.S: ${today.sunset || '06:30 PM'}`;
+                document.getElementById('side-sunrise').textContent = `S.R: ${today.sunrise || '06:30 AM'}`;
+                const hr = new Date().getHours() + new Date().getMinutes() / 60;
+                const t = Math.max(0.06, Math.min(0.94, (hr - 6) / 12));
+                const bx = (1 - t) * (1 - t) * 10 + 2 * (1 - t) * t * 120 + t * t * 230;
+                const by = (1 - t) * (1 - t) * 50 + 2 * (1 - t) * t * (-6) + t * t * 50;
+                document.getElementById('sun-dot').setAttribute('cx', bx.toFixed(1));
+                document.getElementById('sun-dot').setAttribute('cy', by.toFixed(1));
+                document.getElementById('sun-halo').setAttribute('cx', bx.toFixed(1));
+                document.getElementById('sun-halo').setAttribute('cy', by.toFixed(1));
+
+                // Hero Headline
+                document.getElementById('hero-title').textContent = info.text;
+                document.getElementById('hero-sub').textContent = windPhrase(cur.windSpeed ?? 0);
+                document.getElementById('forecast-desc').textContent =
+                    `The ${info.text.toLowerCase()} skies will persist across ${cityOnly}. Expect gentle wind gusts reaching up to ${fmtSpd(cur.windSpeed ?? 0)}.`;
+
+                // Hourly 8 slots
+                document.getElementById('hourly-row').innerHTML = hourly.slice(0, 8).map((h, i) => {
+                    const hi = wmo(h.weatherCode, h.isDay);
+                    return `
+                        <div class="sky-hour-col ${i === 0 ? 'now' : ''}">
+                            <span class="sky-hour-time">${h.time}</span>
+                            <span class="sky-hour-icon">${weatherSvg(hi.icon, 26)}</span>
+                            <span class="sky-hour-temp">${fmtT(h.temp)}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                // 7-Day Row
+                document.getElementById('daily-row').innerHTML = daily.slice(0, 7).map(d => {
+                    const di = wmo(d.weatherCode, 1);
+                    return `
+                        <div class="sky-day-col">
+                            <span class="sky-hour-time">${d.day}</span>
+                            <span class="sky-hour-icon">${weatherSvg(di.icon, 26)}</span>
+                            <span class="sky-hour-temp">${fmtT(d.high)}</span>
+                            <span style="font-size:11px; color:var(--text-muted);">${fmtT(d.low)}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                // Visibility & Humidity
+                const visKm = parseFloat(cur.visibility ?? 10);
+                document.getElementById('m-vis').textContent = currentUnit === 'F' ? `${(visKm * 0.621371).toFixed(1)} mi` : `${visKm} km`;
+                document.getElementById('m-vis-note').textContent = visKm >= 8 ? 'Crystal clear skies ahead' : 'Moderate visibility';
+
+                const hum = Math.round(cur.humidity ?? 0);
+                document.getElementById('m-hum').textContent = `${hum} %`;
+                document.getElementById('m-hum-note').textContent = `The dew point is currently at ${fmtT(today.dewPoint ?? cur.temp, true)}.`;
+
+                // Bottom Smooth Wave
+                const pts = hourly.slice(0, 8);
+                if (pts.length > 1) {
+                    const temps = pts.map(p => p.temp);
+                    const minT = Math.min(...temps);
+                    const maxT = Math.max(...temps);
+                    const span = Math.max(2, maxT - minT);
+                    const coords = pts.map((p, idx) => {
+                        const x = (idx / (pts.length - 1)) * 780 + 10;
+                        const y = 38 - ((p.temp - minT) / span) * 28;
+                        return { x, y };
+                    });
+                    let dLine = `M ${coords[0].x.toFixed(1)} ${coords[0].y.toFixed(1)}`;
+                    for (let i = 1; i < coords.length; i++) {
+                        const p0 = coords[i - 1], p1 = coords[i];
+                        const cx = ((p0.x + p1.x) / 2).toFixed(1);
+                        dLine += ` C ${cx} ${p0.y.toFixed(1)}, ${cx} ${p1.y.toFixed(1)}, ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`;
+                    }
+                    const dArea = `${dLine} L ${coords[coords.length - 1].x.toFixed(1)} 48 L ${coords[0].x.toFixed(1)} 48 Z`;
+                    document.getElementById('wave-line').setAttribute('d', dLine);
+                    document.getElementById('wave-area').setAttribute('d', dArea);
+
+                    document.getElementById('wave-labels').innerHTML = pts.map(p => `
+                        <div class="sky-wave-pt">
+                            <span class="sky-wave-temp">${fmtT(p.temp)}</span>
+                            <span class="sky-wave-time">${p.time}</span>
+                            <span class="sky-wave-sub">H:${fmtT(today.high)} L:${fmtT(today.low)}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            async function fetchWeather(locationQuery) {
+                const query = (typeof locationQuery === 'string' ? locationQuery.trim() : '') || currentCityName || 'Ahmedabad';
+                let lat = null, lon = null, resolvedName = query;
+
+                try {
+                    const cachedCoords = JSON.parse(localStorage.getItem('ocal-weather-coords') || 'null');
+                    if (typeof locationQuery === 'object' && locationQuery && locationQuery.latitude) {
+                        lat = locationQuery.latitude;
+                        lon = locationQuery.longitude;
+                        resolvedName = locationQuery.name || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+                    } else if (cachedCoords && cachedCoords.query && cachedCoords.query.toLowerCase() === query.toLowerCase() && cachedCoords.lat && cachedCoords.lon) {
+                        lat = cachedCoords.lat;
+                        lon = cachedCoords.lon;
+                        resolvedName = cachedCoords.name || query;
+                    } else {
+                        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`);
+                        if (geoRes.ok) {
+                            const geoData = await geoRes.json();
+                            if (geoData?.results?.length > 0) {
+                                const r = geoData.results[0];
+                                lat = r.latitude;
+                                lon = r.longitude;
+                                resolvedName = `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`;
+                            }
+                        }
+                    }
+
+                    if (lat === null || lon === null) {
+                        lat = 23.0225; lon = 72.5714; resolvedName = 'Ahmedabad, Gujarat, India';
+                    }
+
+                    currentCityName = resolvedName;
+                    localStorage.setItem('ocal-weather-loc', currentCityName);
+                    localStorage.setItem('ocal-weather-coords', JSON.stringify({ query, lat, lon, name: resolvedName }));
+
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,cloud_cover,pressure_msl,wind_speed_10m&hourly=temperature_2m,dew_point_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error('Forecast failed');
+                    const data = await res.json();
+                    const cur = data.current || {};
+                    const hourly = data.hourly || {};
+                    const daily = data.daily || {};
+
+                    const nowHour = new Date().getHours();
+                    const totalHours = hourly.time?.length || 24;
+                    const hourlyList = [];
+                    for (let i = 0; i < 12; i++) {
+                        const idx = (nowHour + i) % totalHours;
+                        hourlyList.push({
+                            time: i === 0 ? 'Now' : new Date(hourly.time[idx]).toLocaleTimeString([], { hour: '2-digit', hour12: false }).slice(0, 2),
+                            temp: hourly.temperature_2m ? hourly.temperature_2m[idx] : cur.temperature_2m,
+                            pop: hourly.precipitation_probability ? (hourly.precipitation_probability[idx] || 0) : 0,
+                            weatherCode: hourly.weather_code ? hourly.weather_code[idx] : cur.weather_code,
+                            isDay: (nowHour + i) % 24 >= 6 && (nowHour + i) % 24 < 19 ? 1 : 0
+                        });
+                    }
+
+                    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const dailyList = (daily.time || []).slice(0, 7).map((t, d) => {
+                        const dt = new Date(t);
+                        return {
+                            day: d === 0 ? 'Today' : (d === 1 ? 'Tomorrow' : daysOfWeek[dt.getDay()]),
+                            high: daily.temperature_2m_max ? daily.temperature_2m_max[d] : cur.temperature_2m,
+                            low: daily.temperature_2m_min ? daily.temperature_2m_min[d] : cur.temperature_2m,
+                            weatherCode: daily.weather_code ? daily.weather_code[d] : cur.weather_code
+                        };
+                    });
+
+                    renderAll({
+                        cityName: resolvedName,
+                        current: {
+                            temp: cur.temperature_2m,
+                            feelsLike: cur.apparent_temperature ?? cur.temperature_2m,
+                            humidity: cur.relative_humidity_2m ?? 50,
+                            windSpeed: cur.wind_speed_10m ?? 0,
+                            pressure: cur.pressure_msl ?? 1013,
+                            visibility: hourly.visibility ? (hourly.visibility[0] / 1000).toFixed(1) : 10,
+                            uvIndex: daily.uv_index_max ? daily.uv_index_max[0] : 0,
+                            cloudCover: cur.cloud_cover ?? 0,
+                            weatherCode: cur.weather_code ?? 0,
+                            isDay: cur.is_day ?? 1
+                        },
+                        today: {
+                            high: daily.temperature_2m_max ? daily.temperature_2m_max[0] : cur.temperature_2m,
+                            low: daily.temperature_2m_min ? daily.temperature_2m_min[0] : cur.temperature_2m,
+                            dewPoint: hourly.dew_point_2m ? hourly.dew_point_2m[0] : 16,
+                            sunrise: daily.sunrise?.[0] ? new Date(daily.sunrise[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '06:30 AM',
+                            sunset: daily.sunset?.[0] ? new Date(daily.sunset[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '06:30 PM'
+                        },
+                        hourly: hourlyList,
+                        daily: dailyList
+                    });
+                } catch (err) {
+                    console.warn('[SkyView] Fetch error:', err);
+                }
+            }
+
+            // Toggle Hourly / 7-Day
+            function toggleView(forceMode) {
+                viewMode = forceMode || (viewMode === 'hourly' ? 'daily' : 'hourly');
+                document.getElementById('hourly-row').style.display = viewMode === 'hourly' ? 'grid' : 'none';
+                document.getElementById('daily-row').style.display = viewMode === 'daily' ? 'grid' : 'none';
+                document.getElementById('toggle-view-text').textContent = viewMode === 'hourly' ? 'See More' : 'Show Hourly';
+            }
+
+            document.getElementById('btn-toggle-view').onclick = () => toggleView();
+            document.getElementById('btn-see-all').onclick = () => toggleView('daily');
+
+            btnUnit.onclick = () => {
+                currentUnit = currentUnit === 'C' ? 'F' : 'C';
+                localStorage.setItem('ocal-weather-unit', currentUnit);
+                btnUnit.textContent = `°${currentUnit}`;
+                if (lastWeather) renderAll(lastWeather);
+            };
+
+            document.getElementById('btn-refresh').onclick = () => {
+                const icon = document.querySelector('#btn-refresh i');
+                if (icon) icon.classList.add('fa-spin');
+                fetchWeather(currentCityName).finally(() => setTimeout(() => icon && icon.classList.remove('fa-spin'), 450));
+            };
+
+            document.getElementById('btn-theme').onclick = () => {
+                const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('ocal-weather-theme', next);
+            };
+
+            document.getElementById('btn-home').onclick = () => {
+                if (window.electronAPI && window.electronAPI.navigateTo) {
+                    window.electronAPI.navigateTo('ocal://home');
+                } else {
+                    window.location.href = 'home.html';
+                }
+            };
+
+            // Search Autocomplete
+            const input = document.getElementById('city-input');
+            const dropdown = document.getElementById('search-dropdown');
+            let timer = null;
+
+            input.oninput = () => {
+                const q = input.value.trim();
+                clearTimeout(timer);
+                if (q.length < 2) { dropdown.style.display = 'none'; return; }
+                timer = setTimeout(async () => {
+                    try {
+                        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`);
+                        const data = await res.json();
+                        if (data?.results?.length > 0) {
+                            dropdown.innerHTML = data.results.map(r => {
+                                const fullName = `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}`;
+                                return `<div class="sky-dropdown-item" data-lat="${r.latitude}" data-lon="${r.longitude}" data-name="${fullName}">
+                                    <span>${r.name}${r.admin1 ? ', ' + r.admin1 : ''}</span>
+                                    <span style="font-size:11px; color:var(--text-muted);">${r.country || ''}</span>
+                                </div>`;
+                            }).join('');
+                            dropdown.style.display = 'block';
+                            dropdown.querySelectorAll('.sky-dropdown-item').forEach(el => {
+                                el.onclick = () => {
+                                    dropdown.style.display = 'none';
+                                    input.value = '';
+                                    fetchWeather({
+                                        latitude: parseFloat(el.getAttribute('data-lat')),
+                                        longitude: parseFloat(el.getAttribute('data-lon')),
+                                        name: el.getAttribute('data-name')
+                                    });
+                                };
+                            });
+                        } else {
+                            dropdown.style.display = 'none';
+                        }
+                    } catch (e) { dropdown.style.display = 'none'; }
+                }, 250);
+            };
+
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter' && input.value.trim()) {
+                    dropdown.style.display = 'none';
+                    fetchWeather(input.value.trim());
+                    input.value = '';
+                }
+            };
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.sky-search-wrap')) dropdown.style.display = 'none';
+            });
+
+            try {
+                const cached = JSON.parse(localStorage.getItem('ocal-cached-weather') || 'null');
+                if (cached) renderAll(cached);
+            } catch (e) {}
+
+            fetchWeather(currentCityName);
+        })();
+    </script>
+</body>
+
+</html>
